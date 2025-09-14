@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Full Screen Image</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    html, body { height: 100%; margin: 0; background: #000; }
+    img {
+      width: 100vw; height: 100vh;
+      object-fit: contain;           /* เห็นภาพครบ ทั้งจอพื้นหลังดำ */
+      object-position: center;
+      user-select: none; -webkit-user-drag: none;
+      background: #000;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- รูปจาก Google Drive (ลองโหลดแบบปกติก่อน ถ้าไม่ขึ้นจะ fallback เป็น thumbnail อัตโนมัติ) -->
+  <img id="pic"
+       src="https://drive.google.com/uc?export=view&id=1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp"
+       alt="image">
+
+  <script>
+    // ถ้าโหลดแบบ uc?export=view ไม่สำเร็จ ให้ลอง thumbnail แทน
+    const FILE_ID = "1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp";
+    const img = document.getElementById('pic');
+    img.onerror = function () {
+      this.onerror = null;
+      this.src = "https://drive.google.com/thumbnail?id=" + FILE_ID + "&sz=w2000";
+    };
+  </script>
+</body>
+</html>
