@@ -50,79 +50,14 @@
   <div id="gate">
     <div class="card">
       <h1>Login to the dark web</h1>
+
+      <!-- บรรทัดที่ 1: Username (ช่องหลอก ไม่เช็กค่า) -->
+      <p>username</p>
+      <div class="row">
+        <input id="user" type="text" placeholder="username" autocomplete="username">
+      </div>
+
+      <!-- บรรทัดที่ 2: Password (เช็กจริง) -->
       <p>password</p>
       <div class="row">
-        <input id="pw">
         <input id="pw" type="password" placeholder="13-digit ID" autocomplete="current-password" inputmode="numeric">
-        <button id="ok">Login</button>
-      </div>
-      <label class="opt">
-        <input type="checkbox" id="showpw"> Show Password
-      </label>
-      <div class="err" id="err"></div>
-      <div class="row2">
-        <button id="clear">What?</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Viewer -->
-  <div id="viewer">
-    <img id="pic"
-      src="https://drive.google.com/uc?export=view&id=1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp"
-      alt="image">
-  </div>
-
-<script>
-  // ===== ตั้งค่า =====
-  const PASSWORD = "31419941"; // <<<<<< เปลี่ยนรหัสที่นี่
-
-  const FILE_ID = "1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp"; // ถ้าจะเปลี่ยนรูป เปลี่ยนที่นี่
-  const MAIN_SRC = "https://drive.google.com/uc?export=view&id=" + FILE_ID;
-  const FALLBACK = "https://drive.google.com/thumbnail?id=" + FILE_ID + "&sz=w2000";
-
-  const gate   = document.getElementById('gate');
-  const viewer = document.getElementById('viewer');
-  const pw     = document.getElementById('pw');
-  const ok     = document.getElementById('ok');
-  const showpw = document.getElementById('showpw');
-  const err    = document.getElementById('err');
-  const clear  = document.getElementById('clear');
-  const pic    = document.getElementById('pic');
-
-  // ตั้ง src + fallback เมื่อโหลดไม่ได้
-  pic.src = MAIN_SRC;
-  pic.onerror = function () { this.onerror=null; this.src = FALLBACK; };
-
-  function unlock() {
-    if (pw.value === PASSWORD) {
-      sessionStorage.setItem('img_ok', '1');
-      gate.style.display = 'none';
-      viewer.style.display = 'block';
-      err.textContent = '';
-    } else {
-      err.textContent = 'รหัสไม่ถูกต้อง';
-      pw.select();
-    }
-  }
-
-  function checkSaved() {
-    if (sessionStorage.getItem('img_ok') === '1') {
-      gate.style.display = 'none';
-      viewer.style.display = 'block';
-    } else {
-      gate.style.display = 'grid';
-      viewer.style.display = 'none';
-      setTimeout(()=>pw.focus(), 50);
-    }
-  }
-
-  ok.addEventListener('click', unlock);
-  pw.addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
-  showpw.addEventListener('change', e => { pw.type = e.target.checked ? 'text' : 'password'; });
-  clear.addEventListener('click', () => { sessionStorage.removeItem('img_ok'); err.textContent='ล้างการปลดล็อกแล้ว'; pw.value=''; pw.focus(); });
-
-  checkSaved();
-</script>
-</body>
-</html>
