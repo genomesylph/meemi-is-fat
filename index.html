@@ -2,34 +2,127 @@
 <html lang="th">
 <head>
   <meta charset="utf-8">
-  <title>Full Screen Image</title>
+  <title>Protected Image</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    html, body { height: 100%; margin: 0; background: #000; }
-    img {
-      width: 100vw; height: 100vh;
-      object-fit: contain;           /* เห็นภาพครบ ทั้งจอพื้นหลังดำ */
-      object-position: center;
-      user-select: none; -webkit-user-drag: none;
-      background: #000;
-      display: block;
+    :root { --bg:#000; --card:#fff; --ink:#333; --accent:#ffd1e6; }
+    html, body { height:100%; margin:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+
+    /* ภาพเต็มจอ (ซ่อนจนกว่าจะใส่รหัสถูก) */
+    #viewer { display:none; height:100%; }
+    #viewer img {
+      width:100vw; height:100vh; object-fit:contain; object-position:center;
+      background:#000; display:block; user-select:none; -webkit-user-drag:none;
     }
+
+    /* หน้าล็อก */
+    #gate {
+      position:fixed; inset:0; display:grid; place-items:center; background:#000;
+    }
+    .card {
+      width:min(92vw, 420px); background:var(--card); border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35); padding:18px;
+    }
+    h1 { margin:0 0 8px; font-size:20px; }
+    p  { margin:0 0 14px; color:#666; font-size:14px; }
+    .row { display:flex; gap:8px; }
+    input[type=password], input[type=text] {
+      flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:12px; font-size:16px;
+    }
+    button {
+      padding:10px 14px; border:1px solid #ddd; border-radius:12px; background:var(--accent);
+      cursor:pointer; font-weight:600;
+    }
+    .opt { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:13px; color:#555; }
+    .err { color:#c00; font-size:13px; min-height:1em; margin-top:8px; }
+
+    /* ปุ่มช่วย */
+    .row2 { display:flex; gap:8px; margin-top:10px; }
+    .row2 button { background:#f3f3f3; }
+
+    /* ป้องกัน double-tap zoom บนมือถือ */
+    input, button { touch-action:manipulation; }
   </style>
 </head>
 <body>
-  <!-- รูปจาก Google Drive (ลองโหลดแบบปกติก่อน ถ้าไม่ขึ้นจะ fallback เป็น thumbnail อัตโนมัติ) -->
-  <img id="pic"
-       src="https://drive.google.com/uc?export=view&id=1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp"
-       alt="image">
 
-  <script>
-    // ถ้าโหลดแบบ uc?export=view ไม่สำเร็จ ให้ลอง thumbnail แทน
-    const FILE_ID = "1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp";
-    const img = document.getElementById('pic');
-    img.onerror = function () {
-      this.onerror = null;
-      this.src = "https://drive.google.com/thumbnail?id=" + FILE_ID + "&sz=w2000";
-    };
-  </script>
+  <!-- Gate -->
+  <div id="gate">
+    <div class="card">
+      <h1>Login to the dark web</h1>
+      <p>password</p>
+      <div class="row">
+        <input id="pw">
+        <input id="pw" type="password" placeholder="13-digit ID" autocomplete="current-password" inputmode="numeric">
+        <button id="ok">Login</button>
+      </div>
+      <label class="opt">
+        <input type="checkbox" id="showpw"> Show Password
+      </label>
+      <div class="err" id="err"></div>
+      <div class="row2">
+        <button id="clear">What?</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viewer -->
+  <div id="viewer">
+    <img id="pic"
+      src="https://drive.google.com/uc?export=view&id=1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp"
+      alt="image">
+  </div>
+
+<script>
+  // ===== ตั้งค่า =====
+  const PASSWORD = "31419941"; // <<<<<< เปลี่ยนรหัสที่นี่
+
+  const FILE_ID = "1yiy_z_XiJDZokKlzq1DeC364nwBO_gfp"; // ถ้าจะเปลี่ยนรูป เปลี่ยนที่นี่
+  const MAIN_SRC = "https://drive.google.com/uc?export=view&id=" + FILE_ID;
+  const FALLBACK = "https://drive.google.com/thumbnail?id=" + FILE_ID + "&sz=w2000";
+
+  const gate   = document.getElementById('gate');
+  const viewer = document.getElementById('viewer');
+  const pw     = document.getElementById('pw');
+  const ok     = document.getElementById('ok');
+  const showpw = document.getElementById('showpw');
+  const err    = document.getElementById('err');
+  const clear  = document.getElementById('clear');
+  const pic    = document.getElementById('pic');
+
+  // ตั้ง src + fallback เมื่อโหลดไม่ได้
+  pic.src = MAIN_SRC;
+  pic.onerror = function () { this.onerror=null; this.src = FALLBACK; };
+
+  function unlock() {
+    if (pw.value === PASSWORD) {
+      sessionStorage.setItem('img_ok', '1');
+      gate.style.display = 'none';
+      viewer.style.display = 'block';
+      err.textContent = '';
+    } else {
+      err.textContent = 'รหัสไม่ถูกต้อง';
+      pw.select();
+    }
+  }
+
+  function checkSaved() {
+    if (sessionStorage.getItem('img_ok') === '1') {
+      gate.style.display = 'none';
+      viewer.style.display = 'block';
+    } else {
+      gate.style.display = 'grid';
+      viewer.style.display = 'none';
+      setTimeout(()=>pw.focus(), 50);
+    }
+  }
+
+  ok.addEventListener('click', unlock);
+  pw.addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
+  showpw.addEventListener('change', e => { pw.type = e.target.checked ? 'text' : 'password'; });
+  clear.addEventListener('click', () => { sessionStorage.removeItem('img_ok'); err.textContent='ล้างการปลดล็อกแล้ว'; pw.value=''; pw.focus(); });
+
+  checkSaved();
+</script>
 </body>
 </html>
